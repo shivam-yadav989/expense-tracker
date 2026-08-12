@@ -1,15 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  auth, 
-  db, 
-  googleProvider 
-} from './firebase';
-import { 
-  signInWithRedirect, 
-  getRedirectResult, 
-  onAuthStateChanged, 
-  signOut 
-} from 'firebase/auth';
+import { auth, googleProvider } from './firebase';
+import { signInWithPopup, onAuthStateChanged, signOut } from 'firebase/auth';
 import './App.css';
 
 function App() {
@@ -17,42 +8,28 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Page load hote hi Auth State & Redirect Result handling
   useEffect(() => {
-    // Check if user is returning from Google Redirect Login
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          // User successfully signed in via redirect
-          setUser(result.user);
-        }
-      })
-      .catch((error) => {
-        console.error("Redirect Login Error:", error);
-        setErrorMsg("Authentication failed. Please try again.");
-      });
-
-    // Listen for Auth changes (Login/Logout)
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
-  // Google Sign-In Handler (Redirect Method)
   const handleGoogleSignIn = async () => {
     try {
       setErrorMsg('');
-      await signInWithRedirect(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      console.log("Logged in user:", result.user);
     } catch (error) {
-      console.error("Sign In Error:", error);
-      setErrorMsg("Authentication failed. Please try again.");
+      console.error("Firebase Auth Error:", error);
+      // Screen par aur Alert me exact error dikhayega
+      const message = error.code ? `${error.code}: ${error.message}` : error.message;
+      setErrorMsg(message);
+      alert(`Login Error Detail:\n${message}`);
     }
   };
 
-  // Sign Out Handler
   const handleSignOut = async () => {
     try {
       await signOut(auth);
@@ -63,22 +40,21 @@ function App() {
 
   if (loading) {
     return (
-      <div className="dark-theme" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: '#fff' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: '#fff', backgroundColor: '#0f172a' }}>
         <h2>Loading Expense Tracker...</h2>
       </div>
     );
   }
 
   return (
-    <div className="dark-theme">
+    <div className="dark-theme" style={{ minHeight: '100vh', backgroundColor: '#0f172a' }}>
       {!user ? (
-        // --- LOGIN SCREEN ---
-        <div className="div-auth-wrapper">
-          <div className="auth-card">
+        <div className="div-auth-wrapper" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <div className="auth-card" style={{ padding: '30px', backgroundColor: '#1e293b', borderRadius: '12px', width: '350px' }}>
             <div style={{ textAlign: 'center', marginBottom: '20px' }}>
               <span style={{ fontSize: '40px' }}>💸</span>
-              <h2>Expense Tracker</h2>
-              <p style={{ color: '#8a94a6', fontSize: '14px' }}>Smart Personal Finance Platform</p>
+              <h2 style={{ color: '#fff', margin: '10px 0 5px' }}>Expense Tracker</h2>
+              <p style={{ color: '#94a3b8', fontSize: '14px', margin: 0 }}>Smart Personal Finance Platform</p>
             </div>
 
             {errorMsg && (
@@ -89,7 +65,8 @@ function App() {
                 padding: '10px', 
                 borderRadius: '6px', 
                 marginBottom: '15px',
-                fontSize: '14px',
+                fontSize: '13px',
+                wordBreak: 'break-word',
                 textAlign: 'center' 
               }}>
                 {errorMsg}
@@ -110,7 +87,8 @@ function App() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '10px'
+                gap: '10px',
+                marginTop: '10px'
               }}
             >
               <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="18" />
@@ -119,9 +97,8 @@ function App() {
           </div>
         </div>
       ) : (
-        // --- MAIN DASHBOARD SCREEN ---
         <div style={{ padding: '20px', color: '#fff' }}>
-          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #334155', paddingBottom: '15px' }}>
             <h2>Welcome, {user.displayName || 'User'}! 👋</h2>
             <button 
               onClick={handleSignOut}
@@ -131,16 +108,16 @@ function App() {
                 color: '#fff',
                 border: 'none',
                 borderRadius: '6px',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                fontWeight: 'bold'
               }}
             >
               Sign Out
             </button>
           </header>
 
-          <main style={{ marginTop: '30px' }}>
-            <h3>Your Expense Tracker Dashboard</h3>
-            {/* Aapka baaki ka Expenses/Analytics Code yahan aayega */}
+          <main style={{ marginTop: '30px', textAlign: 'center' }}>
+            <h3>🎉 Successful Login! Your Dashboard is ready.</h3>
           </main>
         </div>
       )}
