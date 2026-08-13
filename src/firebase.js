@@ -2,12 +2,16 @@ import { initializeApp } from "firebase/app";
 import { 
   getAuth, 
   GoogleAuthProvider, 
+  signInWithPopup, 
   signInWithRedirect, 
-  signInWithPopup 
+  getRedirectResult,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged 
 } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-// Your real Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDil7ZfTY0aP-12Duk9Q67Jfj7HsTynk3I",
   authDomain: "expense-tracker-mern-e5ee1.firebaseapp.com",
@@ -18,7 +22,6 @@ const firebaseConfig = {
   measurementId: "G-936RK90GKN"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
@@ -29,4 +32,12 @@ googleProvider.setCustomParameters({
   prompt: 'select_account'
 });
 
-export { signInWithRedirect, signInWithPopup };
+export { 
+  signInWithPopup, 
+  signInWithRedirect, 
+  getRedirectResult, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged 
+};
